@@ -164,7 +164,11 @@ module CycloneDX
 
 
       def create_source_manager(podfile)
-        sourceManager = ::Pod::Source::Manager.new('~/.cocoapods/repos') # TODO: Can we use CocoaPods configuration somehow?
+        sourceManager = ::Pod::Source::Manager.new(::Pod::Config::instance.repos_dir)
+        if ::Pod::Config::instance.sources_manager.all.empty?
+          @logger.debug "No source manager found; thus initialize cdn-repository 'https://cdn.cocoapods.org/'"
+          ::Pod::Command::Repo::AddCDN.parse(['trunk', ::Pod::TrunkSource::TRUNK_REPO_URL]).run
+        end
         @logger.debug "Parsing sources from #{podfile.defined_in_file}"
         podfile.sources.each do |source|
           @logger.debug "Ensuring #{source} is available for searches"
